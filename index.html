@@ -197,10 +197,13 @@ function showRider(rid){
   const mc=document.getElementById('mc');
   const tRev=Object.values(r.sheets).reduce((s,sh)=>s+sh.rev,0);
   const tPay=Object.values(r.sheets).reduce((s,sh)=>s+sh.payable,0);
-  const tDel=Object.values(r.sheets).reduce((s,sh)=>s+sh.delivered,0);
-  const tAsgn=Object.values(r.sheets).reduce((s,sh)=>s+sh.assigned,0);
   const sns=Object.keys(r.sheets);
-  const rate=tDel>0?tRev/tDel:null;
+  // For the header summary, use the primary sheet (highest rev) for delivery count.
+  // Summing across sheets double-counts when different sheets use different delivery metrics.
+  const primarySh=Object.values(r.sheets).reduce((a,b)=>b.rev>a.rev?b:a,Object.values(r.sheets)[0]);
+  const tDel=primarySh.delivered||0;
+  const tAsgn=primarySh.assigned||0;
+  const rate=tDel>0?primarySh.rev/tDel:null;
   let crit='';
   if(rate!==null&&tDel>5){if(rate<15)crit=`&#9888;&#65039; Low rate: \u20b9${rate.toFixed(1)}/delivery \u2014 below normal (\u20b920\u201380). Verify ratecard.`;else if(rate>200)crit=`&#9888;&#65039; High rate: \u20b9${rate.toFixed(1)}/delivery \u2014 unusually high. Verify ratecard.`;}
   const ini=(r.name||rid).slice(0,2).toUpperCase();
